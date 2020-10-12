@@ -1,0 +1,105 @@
+CREATE TABLE "products" (
+  "id" SERIAL PRIMARY KEY,
+  "category_id" int ,
+  "user_id" int ,
+  "name" varchar(100) NOT NULL,
+  "description" varchar(500) NOT NULL,
+  "old_price" integer,
+  "price" integer NOT NULL,
+  "quantity" integer DEFAULT 0,
+  "status" integer DEFAULT 1,
+  "create_at" timestamp DEFAULT (now()),
+  "update_at" timestamp DEFAULT (now())
+);
+
+CREATE TABLE "categories" (
+  "id" SERIAL PRIMARY KEY,
+  "name" varchar(100) NOT NULL
+);
+
+CREATE TABLE "files" (
+  "id" SERIAL PRIMARY KEY,
+  "name" varchar(200) NOT NULL,
+  "path" text NOT NULL,
+  "products_id" int 
+);
+
+ALTER TABLE "products" ADD FOREIGN KEY ("category_id") REFERENCES "categories" ("id");
+
+ALTER TABLE "files" ADD FOREIGN KEY ("products_id") REFERENCES "products" ("id");
+
+CREATE TABLE "users" (
+  "id" SERIAL PRIMARY KEY,
+  "name" varchar(100) NOT NULL,
+  "email" varchar(500) unique NOT NULL,
+  "password" text not null,
+  "cpf_cnpj" text unique NOT NULL,
+  "cep" text,
+  "address" text,
+  "create_at" timestamp DEFAULT (now()),
+  "update_at" timestamp DEFAULT (now())
+);
+
+alter table "products" add FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+
+create function trigger_set_timestamp()
+returns trigger as $$
+begin
+	new.update_at = now()
+	return new;
+end;
+$$ language plpgsql
+
+create trigger set_timestamp
+before update  on products
+for each row 
+execute procedure  trigger_set_timestamp();
+
+create trigger set_timestamp
+before update on users
+for each row 
+execute procedure  trigger_set_timestamp();
+
+
+select * from files f2 
+select * from categories c 
+select* from products p2 
+select* from users
+select * from "session" 
+
+insert into categories(name)values('Comida')
+insert into categories(name)values('Eletrônicos')
+insert into categories(name)values('Automóveis')
+
+
+INSERT INTO public.users
+("name", email, "password", cpf_cnpj, cep, address, create_at, update_at)
+VALUES('Leonardo fulano', 'leonardo.fulano@gmail.com', '123', '12345678918', '25894025', '1231312', now(), now());
+
+
+CREATE TABLE "session" (
+  "sid" varchar NOT NULL COLLATE "default",
+	"sess" json NOT NULL,
+	"expire" timestamp(6) NOT NULL
+)
+WITH (OIDS=FALSE);
+
+ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+--token password recovery
+
+alter table "users" add column reset_token text ;
+alter table "users" add column reset_token_expires text;
+
+alter table products drop constraint products_user_id_fkey,
+add constraint products_user_id_fkey
+foreign key("user_id")
+references "users"("id")
+on delete cascade;
+
+alter table "files" drop constraint files_products_id_fkey,
+add constraint files_products_id_fkey
+foreign key ("products_id")
+references "products"("id")
+on delete cascade;
+

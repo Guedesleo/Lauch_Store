@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block head %}
+       <title>LaunchStore</title>
+    {% endblock head %}
+
+    {%include "parts/styles.njk"%}
+
+</head>
+<body>
+        {%include "parts/messages.njk"%}
+
+        {%include "parts/header.njk"%}
+
+        {% block content %}{% endblock content %}
+
+        {%include "parts/footer.njk"%}
+<script src ="../../script/main.js"></script>
+</body>
+</html>
